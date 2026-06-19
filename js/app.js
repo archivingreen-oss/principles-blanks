@@ -183,10 +183,32 @@ function showSection(sec) {
 }
 
 // ─── 홈 (섹션 목록) ──────────────────────────────────────────────────────
+// 현재 활성 카테고리 (localStorage에서 복원, 기본값 '심사기준')
+let currentCategory = localStorage.getItem('activeCategory') || '심사기준';
+
 function renderHome() {
   const container = document.getElementById('section-list');
   if (!container) return;
-  container.innerHTML = sections.map(s => {
+
+  // 탭 active 상태 동기화 + 클릭 이벤트
+  document.querySelectorAll('.category-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.category === currentCategory);
+    btn.onclick = () => {
+      currentCategory = btn.dataset.category;
+      localStorage.setItem('activeCategory', currentCategory);
+      renderHome();
+    };
+  });
+
+  // 활성 카테고리에 해당하는 섹션만 필터
+  const filtered = sections.filter(s => s.category === currentCategory);
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="empty-category">아직 이 카테고리에는 학습 카드가 없어요.</div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(s => {
     const m1 = getLastStudy(s.id, 1);
     const m2 = getLastStudy(s.id, 2);
     const m1Text = m1 ? `${formatDate(m1)} · ${formatRelativeTime(m1)}` : '—';
